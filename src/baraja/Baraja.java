@@ -1,4 +1,4 @@
-package baraja.cartas;
+package baraja;
 
 import es.discoduroderoer.numeros.Aleatorios;
 
@@ -7,50 +7,22 @@ import es.discoduroderoer.numeros.Aleatorios;
  *
  * @author Disco Duro de Roer
  */
-public class Baraja {
+public abstract class Baraja<T> {
 
     //Atributos
-    private Carta cartas[];
-    private int posSiguienteCarta;
-
-    //Cartas
-    public static final int NUM_CARTAS = 40;
+    protected Carta<T> cartas[];
+    protected int posSiguienteCarta;
+    protected int numCartas;
+    protected int cartasPorPalo;
 
     public Baraja() {
-        this.cartas = new Carta[NUM_CARTAS];
         this.posSiguienteCarta = 0;
-        crearBaraja(); //Creamos la baraja
-        barajar(); // barajamos la baraja
     }
 
     /**
-     * Crea la baraja ordenada
+     * Metodo abstracto crearBaraja
      */
-    private void crearBaraja() {
-
-        String[] palos = Carta.PALOS;
-
-        //Recorro los palos
-        for (int i = 0; i < palos.length; i++) {
-
-            //Recorro los numeros
-            for (int j = 0; j < Carta.LIMITE_CARTA_PALO; j++) {
-                //Las posiciones del 8 y del 9 son el 7 y el 8 (emepzamos en 8)
-                if (!(j == 7 || j == 8)) {
-                    if (j >= 9) {
-                        //Solo para la sota, caballo y rey
-                        cartas[((i * (Carta.LIMITE_CARTA_PALO - 2)) + (j - 2))] = new Carta(j + 1, palos[i]);
-                    } else {
-                        //Para los casos de 1 a 7
-                        cartas[((i * (Carta.LIMITE_CARTA_PALO - 2)) + j)] = new Carta(j + 1, palos[i]);
-                    }
-
-                }
-            }
-
-        }
-
-    }
+    public abstract void crearBaraja();
 
     /**
      * Baraja todas las cartas
@@ -63,7 +35,7 @@ public class Baraja {
         //Recorro las cartas
         for (int i = 0; i < cartas.length; i++) {
 
-            posAleatoria = Aleatorios.generaNumeroAleatorio(0, NUM_CARTAS - 1);
+            posAleatoria = Aleatorios.generaNumeroAleatorio(0, numCartas - 1);
 
             //intercambio
             c = cartas[i];
@@ -86,7 +58,7 @@ public class Baraja {
 
         Carta c = null;
 
-        if (posSiguienteCarta == NUM_CARTAS) {
+        if (posSiguienteCarta == numCartas) {
             System.out.println("Ya no hay mas cartas, barajea de nuevo");
         } else {
             c = cartas[posSiguienteCarta++];
@@ -105,7 +77,7 @@ public class Baraja {
      */
     public Carta[] darCartas(int numCartas) {
 
-        if (numCartas > NUM_CARTAS) {
+        if (numCartas > numCartas) {
             System.out.println("No se puede dar mas cartas de las que hay");
         } else if (cartasDisponible() < numCartas) {
             System.out.println("No hay suficientes cartas que mostrar");
@@ -134,7 +106,7 @@ public class Baraja {
      * @return
      */
     public int cartasDisponible() {
-        return NUM_CARTAS - posSiguienteCarta;
+        return numCartas - posSiguienteCarta;
     }
 
     /**
@@ -142,7 +114,7 @@ public class Baraja {
      */
     public void cartasMonton() {
 
-        if (cartasDisponible() == NUM_CARTAS) {
+        if (cartasDisponible() == numCartas) {
             System.out.println("No se ha sacado ninguna carta");
         } else {
             //Recorro desde 0 a la posSiguienteCarta
