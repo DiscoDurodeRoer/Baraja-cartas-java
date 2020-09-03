@@ -1,22 +1,26 @@
 package baraja;
 
 import es.discoduroderoer.numeros.Aleatorios;
+import java.util.ArrayList;
+import pila.PilaDinamica;
 
 /**
  * Clase Baraja
  *
  * @author Disco Duro de Roer
+ * @param <T>
  */
-public abstract class Baraja<T> {
+public abstract class Baraja<T extends Carta> {
 
     //Atributos
-    protected Carta<T> cartas[];
-    protected int posSiguienteCarta;
+    protected PilaDinamica<T> cartas;
+    protected PilaDinamica<T> cartasMonton;
     protected int numCartas;
     protected int cartasPorPalo;
 
     public Baraja() {
-        this.posSiguienteCarta = 0;
+        this.cartas = new PilaDinamica<>();
+        this.cartasMonton = new PilaDinamica<>();
     }
 
     /**
@@ -30,41 +34,50 @@ public abstract class Baraja<T> {
     public void barajar() {
 
         int posAleatoria = 0;
-        Carta c;
+        T carta;
 
-        //Recorro las cartas
-        for (int i = 0; i < cartas.length; i++) {
-
-            posAleatoria = Aleatorios.generaNumeroAleatorio(0, numCartas - 1);
-
-            //intercambio
-            c = cartas[i];
-            cartas[i] = cartas[posAleatoria];
-            cartas[posAleatoria] = c;
-
+        while (!this.cartasMonton.isEmpty()) {
+            this.cartas.push(this.cartasMonton.pop());
         }
 
-        //La posición vuelve al inicio
-        this.posSiguienteCarta = 0;
+        ArrayList<T> cartasBarajar = new ArrayList<>();
+
+        while (!this.cartas.isEmpty()) {
+            cartasBarajar.add(this.cartas.pop());
+        }
+
+        for (int i = 0; i < cartasBarajar.size(); i++) {
+
+            do {
+                posAleatoria = Aleatorios.generaNumeroAleatorio(0, cartasBarajar.size() - 1);
+                carta = cartasBarajar.get(posAleatoria);
+            } while (carta == null);
+
+            this.cartas.push(carta);
+            cartasBarajar.set(posAleatoria, null);
+
+        }
 
     }
 
     /**
-     * Devuelve la casta donde se encuentre "posSiguienteCarta"
+     * Devuelve la siguiente carta
      *
+     * @param monton
      * @return carta del arreglo
      */
-    public Carta siguienteCarta() {
+    public T siguienteCarta(boolean monton) {
 
-        Carta c = null;
+        T carta = null;
 
-        if (posSiguienteCarta == numCartas) {
-            System.out.println("Ya no hay mas cartas, barajea de nuevo");
-        } else {
-            c = cartas[posSiguienteCarta++];
+        if (!this.cartas.isEmpty()) {
+            carta = cartas.pop();
+            if (monton) {
+                this.cartasMonton.push(carta);
+            }
         }
 
-        return c;
+        return carta;
 
     }
 
@@ -73,30 +86,26 @@ public abstract class Baraja<T> {
      * piden
      *
      * @param numCartas
+     * @param monton
      * @return
      */
-    public Carta[] darCartas(int numCartas) {
+    public ArrayList<T> darCartas(int numCartas, boolean monton) {
 
-        if (numCartas > numCartas) {
-            System.out.println("No se puede dar mas cartas de las que hay");
-        } else if (cartasDisponible() < numCartas) {
-            System.out.println("No hay suficientes cartas que mostrar");
+        if (numCartas > numCartas || cartasDisponible() < numCartas) {
+            return null;
         } else {
 
-            Carta[] cartasDar = new Carta[numCartas];
+            ArrayList<T> cartasDar = new ArrayList<>();
 
             //recorro el array que acabo de crear para rellenarlo
-            for (int i = 0; i < cartasDar.length; i++) {
-                cartasDar[i] = siguienteCarta(); //uso el metodo anterior
+            for (int i = 0; i < numCartas; i++) {
+                cartasDar.add(siguienteCarta(monton)); //uso el metodo anterior
             }
 
             //Lo devuelvo
             return cartasDar;
 
         }
-
-        //solo en caso de error
-        return null;
 
     }
 
@@ -106,7 +115,7 @@ public abstract class Baraja<T> {
      * @return
      */
     public int cartasDisponible() {
-        return numCartas - posSiguienteCarta;
+        return this.cartas.size();
     }
 
     /**
@@ -117,10 +126,7 @@ public abstract class Baraja<T> {
         if (cartasDisponible() == numCartas) {
             System.out.println("No se ha sacado ninguna carta");
         } else {
-            //Recorro desde 0 a la posSiguienteCarta
-            for (int i = 0; i < posSiguienteCarta; i++) {
-                System.out.println(cartas[i]);
-            }
+            System.out.println(this.cartasMonton.toString());
         }
 
     }
@@ -133,11 +139,13 @@ public abstract class Baraja<T> {
         if (cartasDisponible() == 0) {
             System.out.println("No hay cartas que mostrar");
         } else {
-            for (int i = posSiguienteCarta; i < cartas.length; i++) {
-                System.out.println(cartas[i]);
-            }
+            System.out.println(this.cartas.toString());
         }
 
+    }
+    
+    public void agregarCartaMonton(T carta){
+        this.cartasMonton.push(carta);
     }
 
 }
